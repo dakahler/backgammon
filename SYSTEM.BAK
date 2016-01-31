@@ -1,0 +1,9 @@
+/* -----------------------------------------
+	 system.c -> System includes files
+	 -----------------------------------------------------------------------*/
+
+#include<iostream.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<fstream.h>                                

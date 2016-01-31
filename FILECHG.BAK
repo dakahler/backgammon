@@ -1,0 +1,60 @@
+/* -----------------------------------------
+	 filechg.c -> Subprogram of Backgammon (gammon.cpp)
+	 -----------------------------------------------------------------------*/
+
+void file_chg(char player1[20],char player2[20],int win)
+{
+	int o,p,q,r;
+	ifstream infile;
+   ofstream outfile;
+
+	infile.open("STATS.TXT",ios::in);
+	if (infile) {
+		for (o=0;!infile.eof();o++) {
+			infile >> array[o].name;
+			infile >> array[o].wins;
+			infile >> array[o].losses;
+		}
+	}
+	else cout << "FILE ERROR";
+	infile.close();
+
+	p=q=o;
+	for (;strcmp(array[o].name,player1);o--) {}
+	for (;strcmp(array[p].name,player2);p--) {}
+
+	r=p;
+	if (win) {
+		array[o].wins++;
+		array[p].losses++;
+		outfile.open("STATS.TXT",ios::out);
+		if (outfile) {
+			for (p=0;p<q-1;p++) {
+				outfile << array[p].name   << '\n';
+				outfile << array[p].wins   << '\n';
+				outfile << array[p].losses << '\n';
+			}
+		}
+		else cout << "FILE ERROR";
+		outfile.close();
+	}
+	else {
+		array[o].losses++;
+		array[p].wins++;
+		r=p;
+		outfile.open("STATS.TXT",ios::out);
+		if (outfile) {
+			for (p=0;p<q-1;p++) {
+				outfile << array[p].name   << '\n';
+				outfile << array[p].wins   << '\n';
+				outfile << array[p].losses << '\n';
+			}
+		}
+      else cout << "FILE ERROR";
+		outfile.close();
+	}
+	cout << player1 << " stats: " << array[o].wins << '-'
+		  << array[o].losses;
+	cout << '\n' << player2 << " stats: " << array[r].wins << '-'
+		  << array[r].losses;
+}

@@ -1,0 +1,710 @@
+/* -----------------------------------------
+	 move.c -> Subprogram of Backgammon (gammon.cpp)
+	 -----------------------------------------------------------------------*/
+
+int move(char player1[20],char player2[20],int turn,int &off,int &off2,int places[25])
+{
+	int   d,h,l,m,movenum,m_from,m_to,n=0,n1,n2,win=0,x1_opt;
+	char  roll;
+
+/* -----------------------------------------
+	 Main game code
+	 -----------------------------------------------------------------------*/
+	while (!win) {
+
+/* -----------------------------------------
+	 Refresh board and check for win
+	 -----------------------------------------------------------------------*/
+		display_chars(off,off2,places);
+		if (off ==WIN) {
+			win=P1;
+			break;
+		}
+		if (off2==WIN) {
+			win=P2;
+			break;
+		}
+
+/* -----------------------------------------
+	 Tells current players to roll
+	 -----------------------------------------------------------------------*/
+		gotoxy(1,16);
+			if (turn==P1)
+				cout << player1 << ", please roll...";
+			if (turn==P2)
+				cout << player2 << ", please roll...";
+		roll=getch();
+
+		if (roll=='r') {
+			n1=(rand()%6)+1;
+			n2=(rand()%6)+1;
+			cout << n1 << " and " << n2;
+			cout << '\n';
+
+/* -----------------------------------------
+	 Player one game code
+	 -----------------------------------------------------------------------*/
+			if (turn==P1) {
+				d=l=m=0;
+				for (h=0;h!=18;h++) {
+					if (places[h]>0 || places[24]>0)
+						l=1;
+				}
+				if (places[24]>0 && l) {
+					if (places[n1-1]<-1 && places[n2-1]<-1) {
+						cout << "You cannot move. <Press a key>";
+						getch();
+						turn=P2;
+						continue;
+					}
+				}
+				movenum=0;
+
+				while (movenum<4) {
+					movenum++;
+					while (1) {
+						if ((movenum==3 || movenum==4) && n1!=n2) {
+							turn=P2;
+							break;
+						}
+						switch (movenum) {
+							case 1:
+								x1_opt=1;
+								break;
+							case 2:
+								x1_opt=10;
+								break;
+							case 3:
+								x1_opt=19;
+								break;
+							case 4:
+								x1_opt=28;
+								break;
+						};
+						if (n1==NCHG) {
+							if (places[24]>0 && places[n2-1]<=-2) {
+								cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+								cout << "move. <Press a key>";
+								getch();
+								m=1;
+								break;
+							}
+						}
+						if (n2==NCHG) {
+							if (places[24]>0 && places[n1-1]<=-2) {
+								cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+								cout << "move. <Press a key>";
+								getch();
+								m=1;
+								break;
+							}
+						}
+						while (d<24) {
+							if (n1==NCHG || n1==n2) {
+								if (places[d]>0) {
+									if (places[d+n2]<=-2 && d+n2<24)
+										n=1;
+									else {
+										n=0;
+										break;
+									}
+								}
+							}
+							if (n2==NCHG) {
+								if (places[d]>0) {
+									if (places[d+n1]<=-2 && d+n1<24)
+										n=1;
+									else {
+										n=0;
+										break;
+									}
+								}
+							}
+						d++;
+						}
+						if (n==1 && l) {
+							cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+							cout << "move. <Press a key>";
+							getch();
+							m=1;
+							break;
+						}
+						if (off==WIN || off2==WIN) {
+							m=1;
+							break;
+						}
+						l=0;
+						for (h=0;h!=18;h++) {
+							if (places[h]>0 || places[24]>0)
+								l=1;
+						}
+						gotoxy(x1_opt,18);
+						cout << "Move ";
+						switch (movenum) {
+							case 1:
+								cout << 1;
+								break;
+							case 2:
+								cout << 2;
+								break;
+							case 3:
+								cout << 3;
+								break;
+							case 4:
+								cout << 4;
+								break;
+						};
+						gotoxy(x1_opt,19);
+						cout << "------";
+						gotoxy(x1_opt,20);
+						cout << "From:     ";
+						gotoxy(x1_opt+6,20);
+						cin >> m_from;
+						gotoxy(x1_opt,21);
+						cout << "To:    ";
+						gotoxy(x1_opt+4,21);
+						cin >> m_to;
+
+/* -----------------------------------------
+	 Beginning of move error-checking
+	 -----------------------------------------------------------------------*/
+						if (m_from==FORFEIT && m_to==FORFEIT) {
+							cout << "FORCED FORFEIT OF MOVE ENTERED";
+							m=1;
+							break;
+						}
+						if (places[24]>0) {
+							if (m_from!=0) {
+								cout << "Must move from bar first. Move again";
+								continue;
+							}
+							if (!m_from && places[m_to-1]<-1) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+							if (!m_from && (m_to!=n1 && m_to!=n2)) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (places[m_from-1]<0 && m_from!=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (places[m_to-1]<=-2 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (m_to<m_from && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (m_from<0 || m_from>24 || m_to<0 || m_to>24) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!m_from && places[24]<=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!places[m_from-1] && m_from!=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if ((m_to-m_from!=n1) && (m_to-m_from!=n2)
+													 && (m_from!=0) && (m_to!=0) && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!m_to && !l && m_from<19) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (n1==NCHG) {
+							if (!m_to && !l && ((m_from>25-n2)
+											&& (places[m_from-2]>0 || places[m_from-3]>0
+											||  places[m_from-4]>0 || places[m_from-5]>0
+											||  places[m_from-6]>0)))
+							{
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n2==NCHG) {
+							if (!m_to && !l && ((m_from>25-n1)
+											&& (places[m_from-2]>0 || places[m_from-3]>0
+											||  places[m_from-4]>0 || places[m_from-5]>0
+											||  places[m_from-6]>0)))
+							{
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n1==NCHG) {
+							if (m_from<25-n2 && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n2==NCHG) {
+							if (m_from<25-n1 && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (x1_opt) {
+							if ((m_from<17+n1 && m_from<17+n2) && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (l && !m_to) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						break;
+					}
+					if ((movenum==3 || movenum==4) && n1!=n2) {
+						turn=P2;
+						break;
+					}
+
+/* -----------------------------------------
+	 Calculate new checker positions
+	 -----------------------------------------------------------------------*/
+					if (!m) {
+						if (!l) {
+							if (!m_to) {
+								places[m_from-1]--;
+								off++;
+							}
+							else {
+								places[m_from-1]--;
+								places[m_to-1]++;
+							}
+							if (n1!=n2) {
+								if (25-m_from==n1 && n2!=NCHG && !m_to)
+									n1=NCHG;
+								if (25-m_from==n2 && n1!=NCHG && !m_to)
+									n2=NCHG;
+								if (m_to-m_from==n1 && n2!=NCHG)
+									n1=NCHG;
+								if (m_to-m_from==n2 && n1!=NCHG)
+									n2=NCHG;
+							}
+						}
+						else {
+							if (!m_from) {
+								if (places[m_to-1]==-1) {
+									places[24]=-1;
+									places[m_to-1]=1;
+								}
+								else {
+									places[m_to-1]++;
+									places[24]--;
+								}
+								if (n1!=n2) {
+									if (m_to==n1 && n2!=NCHG)
+										n1=NCHG;
+									if (m_to==n2 && n1!=NCHG)
+										n2=NCHG;
+								}
+							}
+							else {
+								if (places[m_to-1]>=0)
+									places[m_to-1]++;
+								if (places[m_to-1]==-1) {
+									places[m_to-1]=1;
+									places[24]-=1;
+								}
+								places[m_from-1]--;
+							}
+							if (n1!=n2) {
+								if (m_to-m_from==n1 && n2!=NCHG)
+									n1=NCHG;
+								if (m_to-m_from==n2 && n1!=NCHG)
+									n2=NCHG;
+								if (n1<=m_from && !m_to && n2!=NCHG)
+									n1=NCHG;
+								if (n2<=m_from && !m_to && n1!=NCHG)
+									n2=NCHG;
+							}
+						}
+						if (m) {
+							turn=P2;
+							continue;
+						}
+					}
+				}
+			turn=P2;
+			continue;
+			}
+
+/* -----------------------------------------
+	 Player two game code
+	 -----------------------------------------------------------------------*/
+			if (turn==P2) {
+				d=l=m=0;
+				for (h=6;h!=24;h++) {
+					if (places[h]<0)
+						l=1;
+				}
+				if (places[24]<0) {
+					if (places[24-n1]>1 && places[24-n2]>1) {
+						cout << "You cannot move. <Press a key>";
+						getch();
+						turn=P1;
+						continue;
+					}
+				}
+				movenum=0;
+
+				while (movenum<4) {
+					movenum++;
+					while (1) {
+						if ((movenum==3 || movenum==4) && n1!=n2) {
+							turn=P1;
+							break;
+						}
+						switch (movenum) {
+							case 1:
+								x1_opt=1;
+								break;
+							case 2:
+								x1_opt=10;
+								break;
+							case 3:
+								x1_opt=19;
+								break;
+							case 4:
+								x1_opt=28;
+								break;
+						};
+						if (n1==NCHG) {
+							if (places[24]<0 && places[n2-1]>=2) {
+								cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+								cout << "move. <Press a key>";
+								getch();
+								m=1;
+								break;
+							}
+						}
+						if (n2==NCHG) {
+							if (places[24]<0 && places[n1-1]>=2) {
+								cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+								cout << "move. <Press a key>";
+								getch();
+								m=1;
+								break;
+							}
+						}
+						while (d<24) {
+							if (n1==NCHG || n1==n2) {
+								if (places[d]<0) {
+									if (places[d-n2]>=2 && d-n2>0)
+										n=1;
+									else {
+										n=0;
+										break;
+									}
+								}
+							}
+							if (n2==NCHG) {
+								if (places[d]<0) {
+									if (places[d-n1]>=2 && d-n1>0)
+										n=1;
+									else {
+										n=0;
+										break;
+									}
+								}
+							}
+						d++;
+						}
+						if (n==1 && l) {
+							cout << "You cannot take a ";
+								switch (movenum) {
+									case 2:
+										cout << "second ";
+										break;
+									case 3:
+										cout << "third ";
+										break;
+									case 4:
+										cout << "fourth ";
+										break;
+								};
+							cout << "move. <Press a key>";
+							getch();
+							m=1;
+							break;
+						}
+						if (off==WIN || off2==WIN) {
+							m=1;
+							break;
+						}
+						l=0;
+						for (h=6;h!=24;h++) {
+							if (places[h]<0 || places[24]<0)
+								l=1;
+						}
+						gotoxy(x1_opt,18);
+						cout << "Move ";
+						switch (movenum) {
+							case 1:
+								cout << 1;
+								break;
+							case 2:
+								cout << 2;
+								break;
+							case 3:
+								cout << 3;
+								break;
+							case 4:
+								cout << 4;
+								break;
+						};
+						gotoxy(x1_opt,19);
+						cout << "------";
+						gotoxy(x1_opt,20);
+						cout << "From:     ";
+						gotoxy(x1_opt+6,20);
+						cin >> m_from;
+						gotoxy(x1_opt,21);
+						cout << "To:    ";
+						gotoxy(x1_opt+4,21);
+						cin >> m_to;
+
+/* -----------------------------------------
+	 Beginning of error-checking
+	 -----------------------------------------------------------------------*/
+						if (m_from==FORFEIT && m_to==FORFEIT) {
+							cout << "FORCED FORFEIT OF MOVE ENTERED";
+							m=1;
+							break;
+						}
+						if (places[24]<0) {
+							if (m_from!=0) {
+								cout << "Must move from bar first. Move again";
+								continue;
+							}
+							if (!m_from && places[m_to-1]>1) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+							if (!m_from && (m_to!=25-n1 && m_to!=25-n2)) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (places[m_from-1]>0 && m_from!=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (places[m_to-1]>=2 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (m_from<m_to && m_from!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (m_from<0 || m_from>24 || m_to<0 || m_to>24) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!m_from && places[24]>=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!places[m_from-1] && m_from!=0 && m_to!=0 && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if ((m_from-m_to!=n1) && (m_from-m_to!=n2)
+													 && (m_from!=0) && (m_to!=0) && l) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (!m_to && !l && (m_from>6 || m_from<1)) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						if (n1==NCHG) {
+							if (!m_to && !l && ((m_from<n2) && (places[m_from]<0
+											|| places[m_from+1]<0
+											||  places[m_from+2]<0 || places[m_from+3]<0
+											||  places[m_from+4]<0)))
+							{
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n2==NCHG) {
+							if (!m_to && !l && ((m_from<n1) && (places[m_from]<0
+											|| places[m_from+1]<0
+											||  places[m_from+2]<0 || places[m_from+3]<0
+											||  places[m_from+4]<0)))
+							{
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n1==NCHG) {
+							if (m_from>n2 && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (n2==NCHG) {
+							if (m_from>n1 && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (x1_opt) {
+							if ((m_from>n1 && m_from>n2) && !l && !m_to) {
+								cout << "Not allowed. Move again";
+								continue;
+							}
+						}
+						if (l && !m_to) {
+							cout << "Not allowed. Move again";
+							continue;
+						}
+						break;
+					}
+					if ((movenum==3 || movenum==4) && n1!=n2) {
+						turn=P1;
+						break;
+					}
+
+/* -----------------------------------------
+	 Calculate new checker positions
+	 -----------------------------------------------------------------------*/
+					if (!m) {
+						if (!l) {
+							if (!m_to) {
+								places[m_from-1]++;
+								off2++;
+							}
+							else {
+								places[m_from-1]++;
+								places[m_to-1]--;
+							}
+							if (n1!=n2) {
+								if (m_from==n1 && n2!=NCHG && !m_to)
+									n1=NCHG;
+								if (m_from==n2 && n1!=NCHG && !m_to)
+									n2=NCHG;
+								if (m_from-m_to==n1 && n2!=NCHG)
+									n1=NCHG;
+								if (m_from-m_to==n2 && n1!=NCHG)
+									n2=NCHG;
+							}
+						}
+						else {
+							if (!m_from) {
+								if (places[m_to-1]) {
+									places[24]=1;
+									places[m_to-1]=-1;
+								}
+								else {
+									places[m_to-1]--;
+									places[24]++;
+								}
+								if (n1!=n2) {
+									if (25-m_to==n1 && n2!=NCHG)
+										n1=NCHG;
+									if (25-m_to==n2 && n1!=NCHG)
+										n2=NCHG;
+								}
+							}
+							else {
+								if (places[m_to-1]<=0)
+									places[m_to-1]--;
+								if (places[m_to-1]==1) {
+									places[m_to-1]=-1;
+									places[24]+=1;
+								}
+								places[m_from-1]++;
+							}
+						}
+						if (n1!=n2) {
+							if (m_from-m_to==n1 && n2!=NCHG)
+								n1=NCHG;
+							if (m_from-m_to==n2 && n1!=NCHG)
+								n2=NCHG;
+							if (n1>=m_from && !m_to && n2!=NCHG)
+								n1=NCHG;
+							if (n2>=m_from && !m_to && n1!=NCHG)
+								n2=NCHG;
+						}
+					}
+					if (m) {
+						turn=P1;
+						continue;
+					}
+				}
+			turn=P1;
+			continue;
+			}
+		}
+	}
+	return win;
+}
