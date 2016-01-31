@@ -1,0 +1,4 @@
+// mainvar.c -- subset of gammon.cpp
+
+char roll;
+int d=0,m=0,n=0   ,movenum,m_from,m_to,x1_opt;
